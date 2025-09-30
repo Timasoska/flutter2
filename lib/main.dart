@@ -4,7 +4,6 @@ void main() {
   runApp(const MyApp());
 }
 
-// Класс MyApp остаётся StatelessWidget, так как он не меняется
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -13,25 +12,16 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Scaffold(
-        // ЗАГОЛОВОК ПРИЛОЖЕНИЯ с КАСТОМНЫМ ШРИФТОМ
         appBar: AppBar(
-          title: const Text(
-            'Видеокарты',
-            style: TextStyle(
-              fontFamily: 'RobotoCustom', // Используем шрифт из pubspec.yaml
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
+          title: const Text('Видеокарты'),
           backgroundColor: Colors.blueGrey[800],
         ),
-        body: const VideoCardInfo(), // Теперь это StatefulWidget
+        body: const VideoCardInfo(),
       ),
     );
   }
 }
 
-// Превращаем VideoCardInfo в StatefulWidget, так как состояние (картинка) будет меняться
 class VideoCardInfo extends StatefulWidget {
   const VideoCardInfo({super.key});
 
@@ -39,27 +29,36 @@ class VideoCardInfo extends StatefulWidget {
   State<VideoCardInfo> createState() => _VideoCardInfoState();
 }
 
-// Класс состояния, где хранится и обновляется индекс текущей картинки
 class _VideoCardInfoState extends State<VideoCardInfo> {
-  // Переменная состояния: индекс текущего изображения (начинаем с 0)
-  int _currentImageIndex = 0;
-
-  // Список путей к 5 изображениям в папке assets/images/
-  final List<String> _imagePaths = [
-    'assets/images/images1.jpeg',
-    'assets/images/images2.jpg',
-    'assets/images/images3.jpg',
-    'assets/images/images4.png',
-    'assets/images/images5.jpg',
+  // Список URL-адресов для изображений, загружаемых по сети.
+  final List<String> imageUrls = [
+    'https://picsum.photos/id/1/400/300',
+    'https://picsum.photos/id/48/400/300',
+    'https://picsum.photos/id/171/400/300',
+    'https://picsum.photos/id/219/400/300',
+    'https://picsum.photos/id/56/400/300',
+    'https://picsum.photos/id/119/400/300',
   ];
 
-  // Функция для смены изображения на следующее
-  void _changeImage() {
-    setState(() {
-      // Увеличиваем индекс на 1, и если он выходит за пределы списка, возвращаемся к 0
-      _currentImageIndex = (_currentImageIndex + 1) % _imagePaths.length;
-    });
-  }
+  // Данные для вертикального списка карточек.
+  final List<Map<String, String>> videoCardTypes = [
+    {
+      'title': 'Игровая видеокарта',
+      'subtitle': 'Специально разработана для максимальной производительности в играх.',
+    },
+    {
+      'title': 'Профессиональная видеокарта',
+      'subtitle': 'Предназначена для использования в области компьютерной графики и дизайна.',
+    },
+    {
+      'title': 'Интегрированная видеокарта',
+      'subtitle': 'Встроена в материнскую плату, используется в офисных компьютерах.',
+    },
+    {
+      'title': 'Дискретная видеокарта',
+      'subtitle': 'Отдельная карта, устанавливаемая в слот расширения.',
+    },
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -68,107 +67,104 @@ class _VideoCardInfoState extends State<VideoCardInfo> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Название ПО
-          Container(
-            padding: const EdgeInsets.symmetric(vertical: 12.0),
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey),
-              borderRadius: BorderRadius.circular(4.0),
+          // --- Основная информация о ПО ---
+          const Center(
+            child: Text(
+              'Видеокарта',
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
-            child: const Center(
-              child: Text(
-                'Видеокарта',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-              ),
+          ),
+          const SizedBox(height: 16),
+          const Text(
+            'Видеокарта — это устройство, которое отвечает за обработку и вывод графики на экран компьютера. Она преобразует цифровые данные в визуальные изображения.',
+            textAlign: TextAlign.justify,
+            style: TextStyle(fontSize: 16),
+          ),
+          const SizedBox(height: 24),
+
+          // --- ЗАДАНИЕ 1: Горизонтальный ListView с изображениями по сети ---
+          SizedBox(
+            height: 120,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: imageUrls.length,
+              itemBuilder: (context, index) {
+                return Card(
+                  // Свойство для обрезки содержимого (Image) по форме Card
+                  clipBehavior: Clip.antiAlias,
+                  // Задаем форму Card со скругленными углами
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.0),
+                  ),
+                  // Используем Image.network для загрузки картинки по URL
+                  child: Image.network(
+                    imageUrls[index],
+                    width: 180,
+                    fit: BoxFit.cover,
+                    // Показываем индикатор загрузки, пока картинка грузится
+                    loadingBuilder: (context, child, loadingProgress) {
+                      if (loadingProgress == null) return child;
+                      return const Center(child: CircularProgressIndicator());
+                    },
+                    // Показываем иконку ошибки, если загрузка не удалась
+                    errorBuilder: (context, error, stackTrace) {
+                      return const Center(child: Icon(Icons.broken_image, size: 48));
+                    },
+                  ),
+                );
+              },
             ),
+          ),
+          const SizedBox(height: 24),
+
+          // --- ЗАДАНИЕ 2: Вертикальный ListView в форме карточек (Card) ---
+          ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: videoCardTypes.length,
+            itemBuilder: (context, index) {
+              final cardData = videoCardTypes[index];
+              return Card(
+                margin: const EdgeInsets.only(bottom: 10),
+                child: ListTile(
+                  // Иконка перед текстом
+                  leading: const Icon(Icons.developer_board, color: Colors.blueGrey),
+                  title: Text(cardData['title']!),
+                  subtitle: Text(cardData['subtitle']!),
+                  // Иконка после текста
+                  trailing: const Icon(Icons.arrow_forward_ios, size: 14),
+
+                  // --- ЗАДАНИЕ 3: Вывод SnackBar при нажатии на карточку ---
+                  onTap: () {
+                    // Скрываем предыдущий SnackBar, если он еще виден
+                    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                    // Показываем новый SnackBar
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Выбран тип: ${cardData['title']}'),
+                        duration: const Duration(seconds: 2),
+                      ),
+                    );
+                  },
+                ),
+              );
+            },
           ),
           const SizedBox(height: 20),
 
-          // Описание ПО
-          Container(
-            padding: const EdgeInsets.all(12.0),
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey),
-              borderRadius: BorderRadius.circular(4.0),
-            ),
-            child: const Text(
-              'Видеокарта — это устройство, которое отвечает за обработку и вывод графики на экран компьютера. Она преобразует цифровые данные в визуальные изображения. Видеокарты бывают встроенными (интегрированными) и дискретными (отдельными).',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 16),
-            ),
-          ),
-          const SizedBox(height: 20),
-
-          // Блок с картинкой и списком
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Картинка, обёрнутая в GestureDetector для обработки нажатий
-              GestureDetector(
-                onTap: _changeImage, // При нажатии вызываем функцию смены изображения
-                child: Container(
-                  width: 130,
-                  height: 150,
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.grey),
-                    borderRadius: BorderRadius.circular(4.0),
-                  ),
-                  child: Center(
-                    child: Image.asset(
-                      _imagePaths[_currentImageIndex], // Берем путь из списка по текущему индексу
-                      width: 100,
-                      height: 100,
-                      fit: BoxFit.contain, // Чтобы изображение не искажалось
-                    ),
-                  ),
-                ),
+          // --- Блок ФИО ---
+          Card(
+            color: Colors.blueGrey[50],
+            child: const ListTile(
+              leading: Icon(Icons.person_outline, size: 40),
+              title: Text(
+                'Рудаков Тимофей Иванович',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
-              const SizedBox(width: 16),
-
-              // Список (не меняется, поэтому остаётся внутри Column)
-              Expanded(
-                child: Container(
-                  height: 150,
-                  padding: const EdgeInsets.all(12.0),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.grey),
-                    borderRadius: BorderRadius.circular(4.0),
-                  ),
-                  child: const Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text('1. Дискретные', style: TextStyle(fontSize: 16)),
-                      SizedBox(height: 4),
-                      Text('2. Интегрированные', style: TextStyle(fontSize: 16)),
-                      SizedBox(height: 4),
-                      Text('3. Игровые', style: TextStyle(fontSize: 16)),
-                      SizedBox(height: 4),
-                      Text('4. Профессиональные', style: TextStyle(fontSize: 16)),
-                    ],
-                  ),
-                ),
+              subtitle: Text(
+                'ИКБО-26-22',
+                style: TextStyle(fontSize: 16),
               ),
-            ],
-          ),
-          const SizedBox(height: 20),
-
-          // ФИО номер группы
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 16.0),
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey),
-              borderRadius: BorderRadius.circular(4.0),
-            ),
-            child: const Row(
-              children: [
-                Icon(Icons.person_outline, size: 40),
-                SizedBox(width: 16),
-                Text(
-                  'Рудаков Т.И.',
-                  style: TextStyle(fontSize: 18),
-                ),
-              ],
             ),
           ),
         ],
