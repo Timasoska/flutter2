@@ -40,7 +40,7 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
       return 'Поле не может быть пустым';
     }
 
-    switch (widget.inputType) { // 2. Валидация в зависимости от типа
+    switch (widget.inputType) {
       case InputFieldType.fullName:
         final reg = RegExp(r'^[A-Za-zА-Яа-яёЁ\s]+$'); // Только буквы (латиница и кириллица) и пробелы
         if (!reg.hasMatch(value)) {
@@ -55,11 +55,10 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
         }
         break;
 
-      case InputFieldType.password: // Требования: минимум 6 символов, буквы, цифры и один из символов: +, _, -
-      // Пароль: минимум 6 символов, буквы, цифры и один из + _ -
-        final reg = RegExp(r'^(?=.*[A-Za-z])(?=.*\d)(?=.*[+_-]).{6,}$');
+      case InputFieldType.password:
+        final reg = RegExp(r'^(?=.*[A-Za-z])(?=.*\d).{6,}$');
         if (!reg.hasMatch(value)) {
-          return 'Пароль должен содержать минимум 6 символов, буквы, цифры и один из символов: +, _, -';
+          return 'Пароль: минимум 6 символов, буквы и цифры';
         }
         break;
 
@@ -93,7 +92,7 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
 
   @override
   Widget build(BuildContext context) {
-    final isPassword = widget.inputType == InputFieldType.password || // Определяем, является ли поле паролем
+    final isPassword = widget.inputType == InputFieldType.password ||
         widget.inputType == InputFieldType.confirmPassword;
 
     return TextFormField(
@@ -101,7 +100,7 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
       obscureText: isPassword ? _hidePassword : false,
       keyboardType: _keyboardType,
       textInputAction: _textInputAction,
-      onFieldSubmitted: (value) { // Управление фокусом: при нажатии "Next" — переход к следующему полю
+      onFieldSubmitted: (value) {
         if (widget.inputType != InputFieldType.confirmPassword) {
           FocusScope.of(context).nextFocus();
         }

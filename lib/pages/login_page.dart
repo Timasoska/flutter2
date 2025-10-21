@@ -1,7 +1,8 @@
 // lib/pages/login_page.dart
 import 'package:flutter/material.dart';
 import '../widgets/text_field.dart';
-import 'register_page.dart';
+// --- КЛЮЧЕВОЙ МОМЕНТ: Импортируем наш файл с маршрутами ---
+import '../routes.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -17,21 +18,24 @@ class _LoginPageState extends State<LoginPage> {
 
   void _submit() {
     if (_formKey.currentState!.validate()) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Авторизация успешна!')),
-      );
+      // --- КЛЮЧЕВОЙ МОМЕНТ: Навигация после успешной авторизации ---
+      // Используем `pushReplacementNamed` для перехода на главный экран.
+      // "Replacement" означает, что текущий экран (LoginPage) будет удален из стека навигации.
+      // В результате пользователь не сможет нажать системную кнопку "назад", чтобы вернуться на экран входа.
+      Navigator.pushReplacementNamed(context, AppRoutes.home);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Авторизация')),
+      appBar: AppBar(title: const Text('Экран авторизации')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
           key: _formKey,
           child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               CustomTextFormField(
                 inputType: InputFieldType.email,
@@ -55,10 +59,10 @@ class _LoginPageState extends State<LoginPage> {
               ),
               TextButton(
                 onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const RegisterPage()),
-                  );
+                  // --- КЛЮЧЕВОЙ МОМЕНТ: Навигация на экран регистрации ---
+                  // Используем `pushNamed`, чтобы просто открыть экран регистрации поверх текущего.
+                  // Пользователь сможет вернуться на этот экран, нажав кнопку "назад".
+                  Navigator.pushNamed(context, AppRoutes.register);
                 },
                 child: const Text('Нет аккаунта? Зарегистрируйтесь'),
               ),
@@ -68,12 +72,4 @@ class _LoginPageState extends State<LoginPage> {
       ),
     );
   }
-}
-
-// Для запуска отдельно
-void main() {
-  runApp(const MaterialApp(
-    debugShowCheckedModeBanner: false,
-    home: LoginPage(),
-  ));
 }

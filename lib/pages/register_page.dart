@@ -1,7 +1,8 @@
 // lib/pages/register_page.dart
 import 'package:flutter/material.dart';
 import '../widgets/text_field.dart';
-import 'login_page.dart';
+// --- КЛЮЧЕВОЙ МОМЕНТ: Импортируем наш файл с маршрутами ---
+import '../routes.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -19,17 +20,17 @@ class _RegisterPageState extends State<RegisterPage> {
 
   void _submit() {
     if (_formKey.currentState!.validate()) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Регистрация успешна!')),
-      );
-      // Можно перейти на профиль или логин
+      // --- КЛЮЧЕВОЙ МОМЕНТ: Навигация после успешной регистрации ---
+      // Так же, как и при входе, заменяем стек навигации главным экраном.
+      // Это предотвращает возврат на экраны регистрации и входа.
+      Navigator.pushReplacementNamed(context, AppRoutes.home);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Регистрация')),
+      appBar: AppBar(title: const Text('Экран регистрации')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
@@ -67,7 +68,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 hintText: 'Повторите пароль',
                 prefixIcon: Icons.lock_clock,
                 controller: _confirmPasswordController,
-                passwordController: _passwordController, // Передаём ссылку на основной пароль
+                passwordController: _passwordController,
               ),
               const SizedBox(height: 24),
               ElevatedButton(
@@ -76,7 +77,10 @@ class _RegisterPageState extends State<RegisterPage> {
               ),
               TextButton(
                 onPressed: () {
-                  Navigator.pop(context); // назад к логину
+                  // --- КЛЮЧЕВОЙ МОМЕНТ: Возврат на предыдущий экран ---
+                  // `Navigator.pop(context)` удаляет текущий экран (RegisterPage) из стека
+                  // и показывает предыдущий (в данном случае, LoginPage).
+                  Navigator.pop(context);
                 },
                 child: const Text('Уже есть аккаунт? Войти'),
               ),
@@ -86,11 +90,4 @@ class _RegisterPageState extends State<RegisterPage> {
       ),
     );
   }
-}
-
-void main() {
-  runApp(const MaterialApp(
-    debugShowCheckedModeBanner: false,
-    home: RegisterPage(),
-  ));
 }
