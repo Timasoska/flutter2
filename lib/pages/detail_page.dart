@@ -1,42 +1,39 @@
-// lib/pages/detail_page.dart
 import 'package:flutter/material.dart';
-import 'home_page.dart'; // Импортируем для доступа к модели ListItem
+import 'home_page.dart'; // для доступа к классу VideoCard
 
 class DetailPage extends StatelessWidget {
   const DetailPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // Получаем аргументы, переданные при навигации
-    final item = ModalRoute.of(context)!.settings.arguments as ListItem;
+    final card = ModalRoute.of(context)!.settings.arguments as VideoCard;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text("Детализация"), // AppBar автоматически получает стрелку "назад"
+        title: Text(card.name),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(24.0),
         child: Center(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const SizedBox(height: 40),
-              Text(
-                item.title,
-                style: Theme.of(context).textTheme.headlineMedium,
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                // --- КЛЮЧЕВОЙ МОМЕНТ: Убрали .replaceAll(), так как теперь используем прямые ссылки ---
+                child: Image.network(card.imageUrl),
               ),
-              const SizedBox(height: 30),
-              Icon(item.icon, size: 120, color: Colors.blueAccent),
-              const SizedBox(height: 30),
+              const SizedBox(height: 24),
               Text(
-                'Подробное описание:',
-                style: Theme.of(context).textTheme.titleMedium,
+                'Описание пункта "${card.name}"',
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
               ),
               const SizedBox(height: 8),
               Text(
-                item.description,
+                card.description,
                 textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodyLarge,
+                style: const TextStyle(fontSize: 16, color: Colors.black54),
               ),
             ],
           ),

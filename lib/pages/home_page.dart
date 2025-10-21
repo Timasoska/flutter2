@@ -1,17 +1,16 @@
-// lib/pages/home_page.dart
-import 'package:flutter/foundation.dart'; // для kIsWeb
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter2/pages/profile_page.dart';
 import 'package:flutter2/routes.dart';
-import 'dart:io'; // для Platform
+import 'dart:io';
 
-// Модель данных для элемента списка
-class ListItem {
-  final String title;
+// Модель данных для видеокарты
+class VideoCard {
+  final String name;
   final String description;
-  final IconData icon;
+  final String imageUrl;
 
-  const ListItem({required this.title, required this.description, required this.icon});
+  const VideoCard({required this.name, required this.description, required this.imageUrl});
 }
 
 class HomePage extends StatefulWidget {
@@ -24,31 +23,26 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
 
-  // Определяем экраны для NavigationBar
-  static final List<Widget> _widgetOptions = <Widget>[
-    const MainContent(), // Наш основной контент с адаптивным дизайном
-    const ProfilePage(), // Экран профиля
+  static const List<Widget> _widgetOptions = <Widget>[
+    MainContent(),
+    ProfilePage(),
   ];
-
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(_selectedIndex == 0 ? 'Основной экран' : 'Профиль'),
-        automaticallyImplyLeading: false, // Убираем стрелку "назад"
+        title: const Text('ИНФОРМАЦИЯ О ВИДЕОКАРТАХ'),
+        automaticallyImplyLeading: false,
       ),
-      body: Center(
-        child: _widgetOptions.elementAt(_selectedIndex),
-      ),
+      body: _widgetOptions.elementAt(_selectedIndex),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _selectedIndex,
-        onDestinationSelected: _onItemTapped,
+        onDestinationSelected: (int index) {
+          setState(() {
+            _selectedIndex = index;
+          });
+        },
         destinations: const <NavigationDestination>[
           NavigationDestination(
             icon: Icon(Icons.home_outlined),
@@ -66,75 +60,109 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
-// Виджет для основного контента с адаптивностью
 class MainContent extends StatelessWidget {
   const MainContent({super.key});
 
-  // Создаем тестовые данные
-  final List<ListItem> items = const [
-    ListItem(title: 'Пункт 1', description: 'Описание для пункта 1', icon: Icons.looks_one),
-    ListItem(title: 'Пункт 2', description: 'Описание для пункта 2', icon: Icons.looks_two),
-    ListItem(title: 'Пункт 3', description: 'Описание для пункта 3', icon: Icons.looks_3),
-    ListItem(title: 'Пункт 4', description: 'Описание для пункта 4', icon: Icons.looks_4),
-    ListItem(title: 'Пункт 5', description: 'Описание для пункта 5', icon: Icons.looks_5),
-    ListItem(title: 'Пункт 6', description: 'Описание для пункта 6', icon: Icons.looks_6),
+  // --- КЛЮЧЕВОЙ МОМЕНТ: Заменены ссылки-заглушки на реальные изображения ---
+  final List<VideoCard> videoCards = const [
+    VideoCard(
+        name: 'GeForce RTX 4090',
+        description: 'Флагманская модель от NVIDIA для 4K-гейминга и профессиональных задач.',
+        imageUrl: 'https://www.nvidia.com/content/dam/en-zz/Solutions/geforce/ada/rtx-4090/geforce-rtx-4090-web-partner-card-307-d.jpg'),
+    VideoCard(
+        name: 'Radeon RX 7900 XTX',
+        description: 'Топовое решение от AMD, построенное на архитектуре RDNA 3.',
+        imageUrl: 'https://www.amd.com/system/files/2022-11/1723521-amd-radeon-rx-7900-series-angle-1260x709.png'),
+    VideoCard(
+        name: 'GeForce RTX 4070',
+        description: 'Сбалансированная карта для 2K-гейминга с поддержкой DLSS 3.',
+        imageUrl: 'https://i0.wp.com/www.overclockers.com/wp-content/uploads/2022/11/card3-scaled.jpg?ssl=1'),
   ];
 
   @override
   Widget build(BuildContext context) {
-    // Адаптивный отступ для десктоп/веб
     final isDesktopOrWeb = kIsWeb || Platform.isMacOS || Platform.isLinux || Platform.isWindows;
-    final verticalPadding = isDesktopOrWeb ? 40.0 : 8.0;
+    final verticalPadding = isDesktopOrWeb ? 24.0 : 8.0;
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        // Вывод в 2 столбца, если ширина больше 600
-        if (constraints.maxWidth > 600) {
-          return GridView.builder(
-            padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: verticalPadding),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              crossAxisSpacing: 16.0,
-              mainAxisSpacing: 16.0,
-              childAspectRatio: 3.5 / 1, // Соотношение сторон карточки
-            ),
-            itemCount: items.length,
-            itemBuilder: (context, index) {
-              return ItemCard(item: items[index]);
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Center(child: Text('Видеокарты', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold))),
+          const SizedBox(height: 8),
+          const Center(child: Text('Устройства для обработки и вывода графики.', textAlign: TextAlign.center)),
+          SizedBox(height: verticalPadding),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              // --- КЛЮЧЕВОЙ МОМЕНТ: Здесь также заменены ссылки на реальные изображения ---
+              Expanded(child: ClipRRect(borderRadius: BorderRadius.circular(8), child: Image.network('https://www.nvidia.com/content/dam/en-zz/Solutions/geforce/ada/rtx-4080/geforce-rtx-4080-16gb-web-partner-card-307-d.jpg', fit: BoxFit.cover))),
+              const SizedBox(width: 16),
+              Expanded(child: ClipRRect(borderRadius: BorderRadius.circular(8), child: Image.network('https://www.amd.com/system/files/2023-05/1935322-amd-radeon-rx-7600-angle-1260x709_0.png', fit: BoxFit.cover))),
+            ],
+          ),
+          SizedBox(height: verticalPadding),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              if (constraints.maxWidth > 600) {
+                // GridView для широких экранов
+                return GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 16,
+                    mainAxisSpacing: 16,
+                    childAspectRatio: 4,
+                  ),
+                  itemCount: videoCards.length,
+                  itemBuilder: (context, index) => VideoCardTile(card: videoCards[index]),
+                );
+              } else {
+                // ListView для узких экранов
+                return ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: videoCards.length,
+                  itemBuilder: (context, index) => VideoCardTile(card: videoCards[index]),
+                );
+              }
             },
-          );
-        } else {
-          // Вывод в 1 столбец (список)
-          return ListView.builder(
-            padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: verticalPadding),
-            itemCount: items.length,
-            itemBuilder: (context, index) {
-              return ItemCard(item: items[index]);
-            },
-          );
-        }
-      },
+          ),
+          SizedBox(height: verticalPadding),
+          const Divider(),
+          const SizedBox(height: 8),
+          const Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.person_pin_circle_outlined),
+              SizedBox(width: 8),
+              Text('Рудаков Тимофей Иванович', style: TextStyle(fontSize: 16)),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }
 
-// Карточка элемента для списка/сетки
-class ItemCard extends StatelessWidget {
-  final ListItem item;
-  const ItemCard({super.key, required this.item});
+class VideoCardTile extends StatelessWidget {
+  final VideoCard card;
+  const VideoCardTile({super.key, required this.card});
 
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: const EdgeInsets.symmetric(vertical: 8.0),
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        side: BorderSide(color: Colors.grey.shade300),
+        borderRadius: BorderRadius.circular(8),
+      ),
       child: ListTile(
-        leading: Icon(item.icon, size: 40, color: Colors.blueAccent),
-        title: Text(item.title, style: const TextStyle(fontWeight: FontWeight.bold)),
-        subtitle: Text(item.description),
-        trailing: const Icon(Icons.arrow_forward_ios),
+        title: Text(card.name),
         onTap: () {
-          // Переход на экран детализации с передачей объекта
-          Navigator.pushNamed(context, AppRoutes.detail, arguments: item);
+          Navigator.pushNamed(context, AppRoutes.detail, arguments: card);
         },
       ),
     );

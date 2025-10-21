@@ -1,8 +1,11 @@
 // lib/routes.dart
 class AppRoutes {
+  // Маршрут для экрана заставки (стартовый)
   static const loading = '/';
-  static const login = '/login';
-  static const register = '/register';
+
+  // Маршрут для основного экрана с NavigationBar
   static const home = '/home';
+
+  // Маршрут для экрана детализации
   static const detail = '/detail';
 }

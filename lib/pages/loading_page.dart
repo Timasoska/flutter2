@@ -1,4 +1,3 @@
-// lib/pages/loading_page.dart
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter2/routes.dart';
@@ -14,31 +13,33 @@ class _LoadingPageState extends State<LoadingPage> {
   @override
   void initState() {
     super.initState();
-    // Переход на экран авторизации через 4 секунды с заменой
     Timer(const Duration(seconds: 4), () {
       if (mounted) {
-        Navigator.pushReplacementNamed(context, AppRoutes.login);
+        Navigator.pushReplacementNamed(context, AppRoutes.home);
       }
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
+    return Scaffold(
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.hourglass_top, size: 60, color: Colors.blue),
-            SizedBox(height: 20),
-            Text('Экран заставки', style: TextStyle(fontSize: 22)),
-            SizedBox(height: 10),
-            Text(
-              'Автоматический переход через 4 секунды...',
-              style: TextStyle(fontSize: 16, color: Colors.grey),
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.black, width: 2),
+              ),
+              child: const Icon(Icons.developer_board, size: 80),
             ),
-            SizedBox(height: 30),
-            CircularProgressIndicator(),
+            const SizedBox(height: 24),
+            const Text(
+              'ИНФОРМАЦИЯ О ВИДЕОКАРТАХ',
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            ),
           ],
         ),
       ),
