@@ -1,7 +1,10 @@
+// lib/main.dart
 import 'package:flutter/material.dart';
-import 'package:flutter2/pages/detail_page.dart';
-import 'package:flutter2/pages/home_page.dart';
 import 'package:flutter2/pages/loading_page.dart';
+import 'package:flutter2/pages/login_page.dart'; // ← добавь импорт
+import 'package:flutter2/pages/register_page.dart'; // ← добавь импорт
+import 'package:flutter2/pages/home_page.dart';
+import 'package:flutter2/pages/detail_page.dart';
 import 'package:flutter2/routes.dart';
 
 void main() {
@@ -27,6 +30,8 @@ class MyApp extends StatelessWidget {
       initialRoute: AppRoutes.loading,
       routes: {
         AppRoutes.loading: (context) => const LoadingPage(),
+        AppRoutes.login: (context) => const LoginPage(),       // ← новое
+        AppRoutes.register: (context) => const RegisterPage(), // ← новое
         AppRoutes.home: (context) => const HomePage(),
         AppRoutes.detail: (context) => const DetailPage(),
       },

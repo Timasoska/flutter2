@@ -15,7 +15,7 @@ class _LoadingPageState extends State<LoadingPage> {
     super.initState();
     Timer(const Duration(seconds: 4), () {
       if (mounted) {
-        Navigator.pushReplacementNamed(context, AppRoutes.home);
+        Navigator.pushReplacementNamed(context, AppRoutes.login); // ← было AppRoutes.home
       }
     });
   }

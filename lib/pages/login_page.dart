@@ -1,39 +1,64 @@
-// lib/main.dart
+// lib/pages/login_page.dart
 import 'package:flutter/material.dart';
-import 'package:flutter2/pages/detail_page.dart';
-import 'package:flutter2/pages/home_page.dart';
-import 'package:flutter2/pages/loading_page.dart';
-import 'package:flutter2/routes.dart';
+import '../routes.dart';
 
-void main() {
-  runApp(const MyApp());
+class LoginPage extends StatefulWidget {
+  const LoginPage({super.key});
+
+  @override
+  State<LoginPage> createState() => _LoginPageState();
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class _LoginPageState extends State<LoginPage> {
+  final _formKey = GlobalKey<FormState>();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+
+  void _login() {
+    if (_formKey.currentState!.validate()) {
+      // Здесь можно добавить проверку логина/пароля
+      Navigator.pushReplacementNamed(context, AppRoutes.home);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Видеокарты',
-      theme: ThemeData(
-        primarySwatch: Colors.green,
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.lightGreen,
-          foregroundColor: Colors.white,
-          centerTitle: true,
+    return Scaffold(
+      appBar: AppBar(title: const Text('Вход')),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              TextFormField(
+                controller: _emailController,
+                decoration: const InputDecoration(labelText: 'Email'),
+                validator: (value) => value?.isEmpty == true ? 'Введите email' : null,
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _passwordController,
+                obscureText: true,
+                decoration: const InputDecoration(labelText: 'Пароль'),
+                validator: (value) => value?.isEmpty == true ? 'Введите пароль' : null,
+              ),
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: _login,
+                child: const Text('Войти'),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.pushNamed(context, AppRoutes.register);
+                },
+                child: const Text('Нет аккаунта? Зарегистрироваться'),
+              ),
+            ],
+          ),
         ),
       ),
-      // Стартуем с экрана заставки
-      initialRoute: AppRoutes.loading,
-
-      // Определяем маршруты
-      routes: {
-        AppRoutes.loading: (context) => const LoadingPage(),
-        AppRoutes.home: (context) => const HomePage(),
-        AppRoutes.detail: (context) => const DetailPage(),
-      },
     );
   }
 }
