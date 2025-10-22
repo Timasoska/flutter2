@@ -8,4 +8,6 @@ class AppRoutes {
 
   // Маршрут для экрана детализации
   static const detail = '/detail';
+
+  
 }

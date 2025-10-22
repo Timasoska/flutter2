@@ -28,7 +28,7 @@ class MyApp extends StatelessWidget {
       // Стартуем с экрана заставки
       initialRoute: AppRoutes.loading,
 
-      // Определяем только нужные маршруты
+      // Определяем маршруты
       routes: {
         AppRoutes.loading: (context) => const LoadingPage(),
         AppRoutes.home: (context) => const HomePage(),

@@ -20,7 +20,6 @@ class DetailPage extends StatelessWidget {
             children: [
               ClipRRect(
                 borderRadius: BorderRadius.circular(12),
-                // --- КЛЮЧЕВОЙ МОМЕНТ: Убрали .replaceAll(), так как теперь используем прямые ссылки ---
                 child: Image.network(card.imageUrl),
               ),
               const SizedBox(height: 24),

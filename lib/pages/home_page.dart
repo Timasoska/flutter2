@@ -63,7 +63,6 @@ class _HomePageState extends State<HomePage> {
 class MainContent extends StatelessWidget {
   const MainContent({super.key});
 
-  // --- КЛЮЧЕВОЙ МОМЕНТ: Заменены ссылки-заглушки на реальные изображения ---
   final List<VideoCard> videoCards = const [
     VideoCard(
         name: 'GeForce RTX 4090',
@@ -96,7 +95,6 @@ class MainContent extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              // --- КЛЮЧЕВОЙ МОМЕНТ: Здесь также заменены ссылки на реальные изображения ---
               Expanded(child: ClipRRect(borderRadius: BorderRadius.circular(8), child: Image.network('https://www.nvidia.com/content/dam/en-zz/Solutions/geforce/ada/rtx-4080/geforce-rtx-4080-16gb-web-partner-card-307-d.jpg', fit: BoxFit.cover))),
               const SizedBox(width: 16),
               Expanded(child: ClipRRect(borderRadius: BorderRadius.circular(8), child: Image.network('https://www.amd.com/system/files/2023-05/1935322-amd-radeon-rx-7600-angle-1260x709_0.png', fit: BoxFit.cover))),
