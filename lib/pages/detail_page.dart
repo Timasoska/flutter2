@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../models/video_card.dart';
 import 'home_page.dart'; // для доступа к классу VideoCard
 
 class DetailPage extends StatelessWidget {

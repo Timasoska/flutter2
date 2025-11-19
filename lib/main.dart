@@ -1,8 +1,9 @@
-// lib/main.dart
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart'; // Импорт
+import 'package:flutter2/pages/home/bloc/home_bloc.dart'; // Импорт блока
 import 'package:flutter2/pages/loading_page.dart';
-import 'package:flutter2/pages/login_page.dart'; // ← добавь импорт
-import 'package:flutter2/pages/register_page.dart'; // ← добавь импорт
+import 'package:flutter2/pages/login_page.dart';
+import 'package:flutter2/pages/register_page.dart';
 import 'package:flutter2/pages/home_page.dart';
 import 'package:flutter2/pages/detail_page.dart';
 import 'package:flutter2/routes.dart';
@@ -30,9 +31,16 @@ class MyApp extends StatelessWidget {
       initialRoute: AppRoutes.loading,
       routes: {
         AppRoutes.loading: (context) => const LoadingPage(),
-        AppRoutes.login: (context) => const LoginPage(),       // ← новое
-        AppRoutes.register: (context) => const RegisterPage(), // ← новое
-        AppRoutes.home: (context) => const HomePage(),
+        AppRoutes.login: (context) => const LoginPage(),
+        AppRoutes.register: (context) => const RegisterPage(),
+
+        // ВНЕДРЕНИЕ BLoC ЗДЕСЬ:
+        // Используем каскадный оператор (..), чтобы сразу добавить событие при создании блока
+        AppRoutes.home: (context) => BlocProvider(
+          create: (context) => HomeBloc()..add(LoadVideoCardsEvent()),
+          child: const HomePage(),
+        ),
+
         AppRoutes.detail: (context) => const DetailPage(),
       },
     );
