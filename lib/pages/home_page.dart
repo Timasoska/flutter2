@@ -1,15 +1,11 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart'; // Импорт bloc
-import 'package:flutter2/data/app_database.dart'; // Новый импорт модели!
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter2/data/app_database.dart';
 import 'package:flutter2/pages/profile_page.dart';
 import 'package:flutter2/routes.dart';
-import 'package:flutter2/pages/home/bloc/home_bloc.dart'; // Импорт нашего блока
-import 'package:flutter2/routes.dart';
-import 'package:flutter2/pages/profile_page.dart';
-import 'dart:io'; // Для Platform
-import 'package:flutter/foundation.dart'; // Для kIsWeb
+import 'package:flutter2/pages/home/bloc/home_bloc.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -21,9 +17,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
 
-  // Список страниц. Обратите внимание: MainContent теперь не константа,
-  // так как мы будем оборачивать его провайдером выше или использовать здесь.
-  // Но так как BlocProvider мы внедрим в main.dart (в роутинге), здесь просто вызываем виджет.
+  // Мы убрали const, так как MainContent теперь требует контекста для FAB
   static const List<Widget> _widgetOptions = <Widget>[
     MainContent(),
     ProfilePage(),
@@ -35,19 +29,24 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         title: const Text('ИНФОРМАЦИЯ О ВИДЕОКАРТАХ'),
         automaticallyImplyLeading: false,
-        // Добавим кнопку обновления для проверки работы BLoC
         actions: [
           if (_selectedIndex == 0)
             IconButton(
               icon: const Icon(Icons.refresh),
               onPressed: () {
-                // Отправляем событие загрузки повторно
                 context.read<HomeBloc>().add(LoadVideoCardsEvent());
               },
             )
         ],
       ),
       body: _widgetOptions.elementAt(_selectedIndex),
+      // Кнопка добавления (видна только на вкладке Главная)
+      floatingActionButton: _selectedIndex == 0
+          ? FloatingActionButton(
+        onPressed: () => _showEditDialog(context, null),
+        child: const Icon(Icons.add),
+      )
+          : null,
       bottomNavigationBar: NavigationBar(
         selectedIndex: _selectedIndex,
         onDestinationSelected: (int index) {
@@ -70,6 +69,68 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
+
+  // Функция для показа диалога (Добавление или Редактирование)
+  void _showEditDialog(BuildContext context, VideoCard? card) {
+    final isEditing = card != null;
+    final nameController = TextEditingController(text: card?.name ?? '');
+    final descController = TextEditingController(text: card?.description ?? '');
+    final urlController = TextEditingController(text: card?.imageUrl ?? '');
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(isEditing ? 'Редактировать' : 'Добавить карту'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(controller: nameController, decoration: const InputDecoration(labelText: 'Название')),
+              TextField(controller: descController, decoration: const InputDecoration(labelText: 'Описание')),
+              TextField(controller: urlController, decoration: const InputDecoration(labelText: 'Ссылка на фото')),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('Отмена'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              final newName = nameController.text;
+              final newDesc = descController.text;
+              final newUrl = urlController.text;
+
+              if (newName.isNotEmpty) {
+                if (isEditing) {
+                  // UPDATE: Создаем объект с тем же ID, но новыми данными
+                  final updatedCard = VideoCard(
+                    id: card.id,
+                    name: newName,
+                    description: newDesc,
+                    imageUrl: newUrl,
+                  );
+                  context.read<HomeBloc>().add(UpdateVideoCardEvent(updatedCard));
+                } else {
+                  // CREATE: Создаем объект (ID=0, репозиторий его проигнорирует)
+                  final newCard = VideoCard(
+                    id: 0,
+                    name: newName,
+                    description: newDesc,
+                    imageUrl: newUrl,
+                  );
+                  context.read<HomeBloc>().add(AddVideoCardEvent(newCard));
+                }
+                Navigator.pop(dialogContext);
+              }
+            },
+            child: const Text('Сохранить'),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class MainContent extends StatelessWidget {
@@ -80,119 +141,76 @@ class MainContent extends StatelessWidget {
     final isDesktopOrWeb = kIsWeb || Platform.isMacOS || Platform.isLinux || Platform.isWindows;
     final verticalPadding = isDesktopOrWeb ? 24.0 : 8.0;
 
-    // Используем BlocBuilder для перестройки UI на основе состояния
     return BlocBuilder<HomeBloc, HomeState>(
       builder: (context, state) {
-        // 1. Состояние Загрузки
         if (state is HomeLoading) {
           return const Center(child: CircularProgressIndicator());
         }
 
-        // 2. Состояние Ошибки
         if (state is HomeError) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.error_outline, size: 60, color: Colors.red),
-                const SizedBox(height: 16),
-                Text(state.message, style: const TextStyle(fontSize: 18)),
-                const SizedBox(height: 16),
-                ElevatedButton(
-                    onPressed: () {
-                      context.read<HomeBloc>().add(LoadVideoCardsEvent());
-                    },
-                    child: const Text("Повторить")
-                )
-              ],
-            ),
-          );
+          return Center(child: Text(state.message));
         }
 
-        // 3. Состояние Загружено (показываем контент)
         if (state is HomeLoaded) {
+          if (state.videoCards.isEmpty) {
+            return const Center(child: Text("Список пуст. Добавьте карту!"));
+          }
+
           return SingleChildScrollView(
             padding: const EdgeInsets.all(16.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Center(child: Text('Видеокарты', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold))),
-                const SizedBox(height: 8),
-                const Center(child: Text('Устройства для обработки и вывода графики.', textAlign: TextAlign.center)),
                 SizedBox(height: verticalPadding),
 
-                // Статический блок с картинками (оставил как в оригинале для красоты)
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    Expanded(child: ClipRRect(borderRadius: BorderRadius.circular(8), child: Image.network('https://www.nvidia.com/content/dam/en-zz/Solutions/geforce/ada/rtx-4080/geforce-rtx-4080-16gb-web-partner-card-307-d.jpg', fit: BoxFit.cover, errorBuilder: (c,o,s) => const Icon(Icons.image_not_supported)))),
-                    const SizedBox(width: 16),
-                    Expanded(child: ClipRRect(borderRadius: BorderRadius.circular(8), child: Image.network('https://www.amd.com/system/files/2023-05/1935322-amd-radeon-rx-7600-angle-1260x709_0.png', fit: BoxFit.cover, errorBuilder: (c,o,s) => const Icon(Icons.image_not_supported)))),
-                  ],
-                ),
-                SizedBox(height: verticalPadding),
-
-                // Список видеокарт из BLoC
-                LayoutBuilder(
-                  builder: (context, constraints) {
-                    if (constraints.maxWidth > 600) {
-                      return GridView.builder(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          crossAxisSpacing: 16,
-                          mainAxisSpacing: 16,
-                          childAspectRatio: 4,
-                        ),
-                        itemCount: state.videoCards.length,
-                        itemBuilder: (context, index) => VideoCardTile(card: state.videoCards[index]),
-                      );
-                    } else {
-                      return ListView.builder(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemCount: state.videoCards.length,
-                        itemBuilder: (context, index) => VideoCardTile(card: state.videoCards[index]),
-                      );
-                    }
-                  },
-                ),
-                SizedBox(height: verticalPadding),
-                const Divider(),
-                const SizedBox(height: 8),
-                const Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.person_pin_circle_outlined),
-                    SizedBox(width: 8),
-                    Text('Рудаков Тимофей Иванович', style: TextStyle(fontSize: 16)),
-                  ],
+                // Список карточек
+                ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: state.videoCards.length,
+                  itemBuilder: (context, index) => VideoCardTile(
+                    card: state.videoCards[index],
+                    // Передаем функции редактирования и удаления
+                    onEdit: () => _openEditDialog(context, state.videoCards[index]),
+                    onDelete: () => context.read<HomeBloc>().add(DeleteVideoCardEvent(state.videoCards[index].id)),
+                  ),
                 ),
               ],
             ),
           );
         }
-
-        // 4. Начальное состояние (или если что-то пошло не так)
-        return const Center(child: Text("Нажмите обновить для загрузки"));
+        return const SizedBox.shrink();
       },
     );
+  }
+
+  // Вспомогательный метод для вызова диалога из MainContent (копипаст логики из State)
+  // В идеале диалог лучше вынести в отдельный виджет
+  void _openEditDialog(BuildContext context, VideoCard card) {
+    // Находим State родителя и вызываем метод
+    final homeState = context.findAncestorStateOfType<_HomePageState>();
+    homeState?._showEditDialog(context, card);
   }
 }
 
 class VideoCardTile extends StatelessWidget {
   final VideoCard card;
-  const VideoCardTile({super.key, required this.card});
+  final VoidCallback onEdit;
+  final VoidCallback onDelete;
+
+  const VideoCardTile({
+    super.key,
+    required this.card,
+    required this.onEdit,
+    required this.onDelete
+  });
 
   @override
   Widget build(BuildContext context) {
     return Card(
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        side: BorderSide(color: Colors.grey.shade300),
-        borderRadius: BorderRadius.circular(8),
-      ),
+      elevation: 2,
+      margin: const EdgeInsets.symmetric(vertical: 8),
       child: ListTile(
         leading: SizedBox(
           width: 60,
@@ -201,6 +219,13 @@ class VideoCardTile extends StatelessWidget {
         ),
         title: Text(card.name),
         subtitle: Text(card.description, maxLines: 1, overflow: TextOverflow.ellipsis),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            IconButton(icon: const Icon(Icons.edit, color: Colors.blue), onPressed: onEdit),
+            IconButton(icon: const Icon(Icons.delete, color: Colors.red), onPressed: onDelete),
+          ],
+        ),
         onTap: () {
           Navigator.pushNamed(context, AppRoutes.detail, arguments: card);
         },

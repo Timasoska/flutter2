@@ -2,22 +2,42 @@ import 'package:injectable/injectable.dart';
 import 'package:drift/drift.dart';
 import 'app_database.dart';
 
-// АННОТАЦИЯ DI: Регистрируем репозиторий в системе внедрения зависимостей.
 @lazySingleton
 class VideoCardsRepository {
   final AppDatabase _db;
 
-  // Конструктор.
-  // Injectable автоматически найдет созданный ранее экземпляр AppDatabase и подставит сюда.
   VideoCardsRepository(this._db);
 
-  // Метод для получения списка карт.
-  // Возвращает Future<List<VideoCard>>, где VideoCard — это дата-класс, сгенерированный Drift'ом.
+  // READ
   Future<List<VideoCard>> getAllVideoCards() async {
-    // Эмуляция задержки сети (чтобы мы успели увидеть крутилку загрузки)
-    await Future.delayed(const Duration(seconds: 1));
+    // Сортируем, чтобы новые были внизу (или по ID)
+    return (_db.select(_db.videoCards)
+      ..orderBy([(t) => OrderingTerm(expression: t.id)]))
+        .get();
+  }
 
-    // Обращение к таблице videoCards через select-запрос
-    return _db.select(_db.videoCards).get();
+  // CREATE
+  Future<void> addVideoCard(VideoCard card) async {
+    // Превращаем обычный объект в Companion для вставки.
+    // ID не указываем, Drift сгенерирует его сам.
+    await _db.into(_db.videoCards).insert(
+      VideoCardsCompanion.insert(
+        name: card.name,
+        description: card.description,
+        imageUrl: card.imageUrl,
+      ),
+    );
+  }
+
+  // UPDATE
+  Future<void> updateVideoCard(VideoCard card) async {
+    // replace заменяет всю строку по её ID
+    await _db.update(_db.videoCards).replace(card);
+  }
+
+  // DELETE
+  Future<void> deleteVideoCard(int id) async {
+    // Удаляем запись, где id совпадает
+    await (_db.delete(_db.videoCards)..where((t) => t.id.equals(id))).go();
   }
 }

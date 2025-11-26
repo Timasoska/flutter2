@@ -6,39 +6,63 @@ import 'package:flutter2/data/video_cards_repository.dart';
 part 'home_event.dart';
 part 'home_state.dart';
 
-// АННОТАЦИЯ: Делаем Блок доступным для DI.
-// Теперь мы можем получить его через getIt<HomeBloc>().
 @injectable
 class HomeBloc extends Bloc<HomeEvent, HomeState> {
-
-  // Блок зависит от Репозитория. Мы НЕ создаем репозиторий тут (new Repository).
-  // Мы получаем его извне (Inversion of Control).
   final VideoCardsRepository repository;
 
-  // Injectable сам "впрыснет" (inject) сюда нужный репозиторий.
   HomeBloc(this.repository) : super(HomeInitial()) {
-    // Регистрируем обработчик события загрузки
     on<LoadVideoCardsEvent>(_onLoadVideoCards);
+    on<AddVideoCardEvent>(_onAddVideoCard);       // <-- Новый
+    on<UpdateVideoCardEvent>(_onUpdateVideoCard); // <-- Новый
+    on<DeleteVideoCardEvent>(_onDeleteVideoCard); // <-- Новый
   }
 
   Future<void> _onLoadVideoCards(
       LoadVideoCardsEvent event,
       Emitter<HomeState> emit,
       ) async {
-    emit(HomeLoading()); // 1. Сообщаем UI: "Покажи загрузку"
-
+    emit(HomeLoading());
     try {
-      // 2. Обращаемся к репозиторию за данными
       final cards = await repository.getAllVideoCards();
-
-      if (cards.isEmpty) {
-        emit(HomeError("Список видеокарт пуст (БД пуста)!"));
-      } else {
-        // 3. Передаем успешный результат в UI
-        emit(HomeLoaded(cards));
-      }
+      emit(HomeLoaded(cards)); // Даже если список пуст, показываем Loaded (пустой список)
     } catch (e) {
       emit(HomeError("Ошибка загрузки: $e"));
+    }
+  }
+
+  Future<void> _onAddVideoCard(
+      AddVideoCardEvent event,
+      Emitter<HomeState> emit,
+      ) async {
+    try {
+      await repository.addVideoCard(event.card);
+      add(LoadVideoCardsEvent()); // Перезагружаем список
+    } catch (e) {
+      emit(HomeError("Ошибка добавления: $e"));
+    }
+  }
+
+  Future<void> _onUpdateVideoCard(
+      UpdateVideoCardEvent event,
+      Emitter<HomeState> emit,
+      ) async {
+    try {
+      await repository.updateVideoCard(event.card);
+      add(LoadVideoCardsEvent()); // Перезагружаем список
+    } catch (e) {
+      emit(HomeError("Ошибка обновления: $e"));
+    }
+  }
+
+  Future<void> _onDeleteVideoCard(
+      DeleteVideoCardEvent event,
+      Emitter<HomeState> emit,
+      ) async {
+    try {
+      await repository.deleteVideoCard(event.id);
+      add(LoadVideoCardsEvent()); // Перезагружаем список
+    } catch (e) {
+      emit(HomeError("Ошибка удаления: $e"));
     }
   }
 }
