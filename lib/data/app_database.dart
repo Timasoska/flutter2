@@ -3,38 +3,40 @@ import 'package:drift_flutter/drift_flutter.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:injectable/injectable.dart';
 
-// Указываем имя файла, который будет сгенерирован
+// Указываем файл, который будет сгенерирован build_runner'ом.
+// В нем содержится вся "магия" Drift: SQL-запросы, маппинг данных и класс _$AppDatabase.
 part 'app_database.g.dart';
 
-// 1. Описание таблицы
+// 1. Описание структуры таблицы.
+// Мы не пишем SQL вручную (CREATE TABLE...), Drift делает это за нас на основе этого класса.
 class VideoCards extends Table {
-  // id - автоинкремент
+  // autoIncrement автоматически создает уникальный ID для каждой записи
   IntColumn get id => integer().autoIncrement()();
-  // Название видеокарты
   TextColumn get name => text()();
-  // Описание
   TextColumn get description => text()();
-  // Ссылка на картинку
   TextColumn get imageUrl => text()();
 }
 
-// 2. Класс базы данных
-@lazySingleton // Регистрируем БД как Singleton в DI
-@DriftDatabase(tables: [VideoCards])
+// 2. Основной класс базы данных.
+@lazySingleton // АННОТАЦИЯ DI: Говорит GetIt'у: "Создай этот объект один раз, когда он впервые понадобится".
+@DriftDatabase(tables: [VideoCards]) // Подключаем наши таблицы
 class AppDatabase extends _$AppDatabase {
-  // Конструктор, открывающий соединение
+  // Конструктор открывает соединение с файлом базы данных
   AppDatabase() : super(_openConnection());
 
+  // Версия схемы БД. Если мы изменим таблицы, нужно будет увеличить версию и написать миграцию.
   @override
   int get schemaVersion => 1;
 
-  // 3. Миграция и начальное заполнение данными (Seed)
+  // 3. Стратегия миграции. Здесь мы определяем, что делать при создании БД.
   @override
   MigrationStrategy get migration => MigrationStrategy(
     onCreate: (Migrator m) async {
-      await m.createAll(); // Создаем таблицы
+      // Создаем все таблицы в базе данных
+      await m.createAll();
 
-      // Добавляем начальные данные (CRUD - Create)
+      // SEED DATA (Начальные данные):
+      // Добавляем записи при самом первом запуске, чтобы экран не был пустым.
       await batch((batch) {
         batch.insertAll(videoCards, [
           VideoCardsCompanion.insert(
@@ -58,11 +60,11 @@ class AppDatabase extends _$AppDatabase {
   );
 }
 
-// Функция открытия соединения (стандартный код для drift_flutter)
+// Вспомогательная функция для поиска пути к файлу БД на устройстве (Windows/Android/iOS)
 LazyDatabase _openConnection() {
   return LazyDatabase(() async {
     final dbFolder = await getApplicationDocumentsDirectory();
-    // Имя файла базы данных
+    // База будет лежать в файле 'videocards_db.sqlite' в документах приложения
     return driftDatabase(
       name: 'videocards_db',
       native: DriftNativeOptions(
