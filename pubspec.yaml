@@ -11,13 +11,26 @@ dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.8
-
   flutter_bloc: ^9.1.1
+
+  drift: ^2.29.0
+  drift_flutter: ^0.2.7
+  sqlite3_flutter_libs: ^0.5.0
+  path_provider: ^2.1.5
+  get_it: ^8.0.3
+  injectable: ^2.5.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^4.0.0
+  flutter_lints: ^5.0.0
+  build_runner: ^2.10.4
+  drift_dev: ^2.29.0
+  injectable_generator: ^2.9.1
+
+build_runner: ^2.4.14
+drift_dev: ^2.29.0
+injectable_generator: ^2.6.3
 
 flutter:
   uses-material-design: true

@@ -2,10 +2,14 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart'; // Импорт bloc
-import 'package:flutter2/models/video_card.dart';
+import 'package:flutter2/data/app_database.dart'; // Новый импорт модели!
 import 'package:flutter2/pages/profile_page.dart';
 import 'package:flutter2/routes.dart';
 import 'package:flutter2/pages/home/bloc/home_bloc.dart'; // Импорт нашего блока
+import 'package:flutter2/routes.dart';
+import 'package:flutter2/pages/profile_page.dart';
+import 'dart:io'; // Для Platform
+import 'package:flutter/foundation.dart'; // Для kIsWeb
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});

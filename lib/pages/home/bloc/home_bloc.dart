@@ -1,12 +1,17 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter2/data/video_cards_data.dart';
-import 'package:flutter2/models/video_card.dart';
+import 'package:injectable/injectable.dart';
+import 'package:flutter2/data/app_database.dart'; // Импорт сгенерированной модели VideoCard
+import 'package:flutter2/data/video_cards_repository.dart';
 
 part 'home_event.dart';
 part 'home_state.dart';
 
+@injectable // Помечаем Блок как injectable, чтобы DI мог его создать
 class HomeBloc extends Bloc<HomeEvent, HomeState> {
-  HomeBloc() : super(HomeInitial()) {
+  final VideoCardsRepository repository;
+
+  // Injectable сам найдет и подставит репозиторий
+  HomeBloc(this.repository) : super(HomeInitial()) {
     on<LoadVideoCardsEvent>(_onLoadVideoCards);
   }
 
@@ -14,21 +19,19 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       LoadVideoCardsEvent event,
       Emitter<HomeState> emit,
       ) async {
-    emit(HomeLoading()); // 1. Сообщаем UI, что грузимся
+    emit(HomeLoading());
 
     try {
-      // 2. Имитация задержки сети (2 секунды)
-      await Future.delayed(const Duration(seconds: 2));
+      // Получаем данные из БД через репозиторий
+      final cards = await repository.getAllVideoCards();
 
-      // 3. Если список пуст - можно кинуть ошибку для проверки state Error
-      if (mockVideoCards.isEmpty) {
-        emit(HomeError("Список видеокарт пуст!"));
+      if (cards.isEmpty) {
+        emit(HomeError("Список видеокарт пуст (БД пуста)!"));
       } else {
-        // 4. Передаем данные в UI
-        emit(HomeLoaded(mockVideoCards));
+        emit(HomeLoaded(cards));
       }
     } catch (e) {
-      emit(HomeError("Ошибка загрузки данных"));
+      emit(HomeError("Ошибка загрузки: $e"));
     }
   }
 }

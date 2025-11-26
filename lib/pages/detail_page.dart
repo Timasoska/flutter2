@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import '../models/video_card.dart';
-import 'home_page.dart'; // для доступа к классу VideoCard
+import '../data/app_database.dart'; // Новый импорт модели VideoCard
 
 class DetailPage extends StatelessWidget {
   const DetailPage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    // Приводим аргументы к типу VideoCard (сгенерированному Drift)
     final card = ModalRoute.of(context)!.settings.arguments as VideoCard;
 
     return Scaffold(
@@ -21,11 +21,15 @@ class DetailPage extends StatelessWidget {
             children: [
               ClipRRect(
                 borderRadius: BorderRadius.circular(12),
-                child: Image.network(card.imageUrl),
+                // card.imageUrl теперь приходит из БД
+                child: Image.network(
+                  card.imageUrl,
+                  errorBuilder: (c, o, s) => const Icon(Icons.broken_image, size: 100),
+                ),
               ),
               const SizedBox(height: 24),
               Text(
-                'Описание пункта "${card.name}"',
+                'Описание: ${card.name}',
                 textAlign: TextAlign.center,
                 style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
               ),
