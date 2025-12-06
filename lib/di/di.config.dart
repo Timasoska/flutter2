@@ -12,6 +12,7 @@
 import 'package:flutter2/data/app_database.dart' as _i451;
 import 'package:flutter2/data/video_cards_repository.dart' as _i244;
 import 'package:flutter2/pages/home/bloc/home_bloc.dart' as _i692;
+import 'package:flutter2/theme/theme_cubit.dart' as _i1051;
 import 'package:get_it/get_it.dart' as _i174;
 import 'package:injectable/injectable.dart' as _i526;
 
@@ -26,6 +27,7 @@ extension GetItInjectableX on _i174.GetIt {
       environment,
       environmentFilter,
     );
+    gh.singleton<_i1051.ThemeCubit>(() => _i1051.ThemeCubit());
     gh.lazySingleton<_i451.AppDatabase>(() => _i451.AppDatabase());
     gh.lazySingleton<_i244.VideoCardsRepository>(
         () => _i244.VideoCardsRepository(gh<_i451.AppDatabase>()));

@@ -1,17 +1,20 @@
 import 'package:flutter/material.dart';
 import '../data/app_database.dart'; // Новый импорт модели VideoCard
+import '../theme/theme_toggle_action.dart'; // Добавить импорт
 
 class DetailPage extends StatelessWidget {
   const DetailPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // Приводим аргументы к типу VideoCard (сгенерированному Drift)
     final card = ModalRoute.of(context)!.settings.arguments as VideoCard;
 
     return Scaffold(
       appBar: AppBar(
         title: Text(card.name),
+        actions: const [
+          ThemeToggleAction(), // Кнопка смены темы
+        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),

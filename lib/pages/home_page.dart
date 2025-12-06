@@ -6,10 +6,10 @@ import 'package:flutter2/data/app_database.dart';
 import 'package:flutter2/pages/profile_page.dart';
 import 'package:flutter2/routes.dart';
 import 'package:flutter2/pages/home/bloc/home_bloc.dart';
+import 'package:flutter2/theme/theme_toggle_action.dart'; // Добавить импорт
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
-
   @override
   State<HomePage> createState() => _HomePageState();
 }
@@ -30,6 +30,9 @@ class _HomePageState extends State<HomePage> {
         title: const Text('ИНФОРМАЦИЯ О ВИДЕОКАРТАХ'),
         automaticallyImplyLeading: false,
         actions: [
+          // Добавляем кнопку переключения темы
+          const ThemeToggleAction(),
+
           if (_selectedIndex == 0)
             IconButton(
               icon: const Icon(Icons.refresh),
